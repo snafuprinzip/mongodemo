@@ -50,7 +50,7 @@ def main(args):
 
     ### Standard URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
 
-    MONGODB_URI = 'mongodb://%s:%s@localhost:27017/%s' % (username, password, dbname)
+    MONGODB_URI = 'mongodb://%s:%s@mongodb:27017/%s' % (username, password, dbname)
     print ("Connection to mongodb uri: %s ..." % MONGODB_URI)
 
     client = pymongo.MongoClient(MONGODB_URI)
