@@ -43,14 +43,16 @@ SEED_DATA = [
 def main(args):
 
     # read environment variables in order to collect information about the mongodb
-    username = os.getenv("MONGODB_USER")
-    password = os.getenv("MONGODB_PASSWORD")
-    dbname   = os.getenv("MONGODB_DATABASE")
-    adminpwd = os.getenv("MONGODB_ADMIN_PASSWORD")
+    mongohost = os.getenv("MONGODB_SERVICE_HOST", "localhost")
+    mongoport = os.getenv("MONGODB_SERVICE_PORT", 27017)
+    username  = os.getenv("MONGODB_USER")
+    password  = os.getenv("MONGODB_PASSWORD")
+    dbname    = os.getenv("MONGODB_DATABASE")
+    adminpwd  = os.getenv("MONGODB_ADMIN_PASSWORD")
 
     ### Standard URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
 
-    MONGODB_URI = 'mongodb://%s:%s@mongodb:27017/%s' % (username, password, dbname)
+    MONGODB_URI = 'mongodb://%s:%s@%s:%d/%s' % (username, password, mongohost, mongoport, dbname)
     print ("Connection to mongodb uri: %s ..." % MONGODB_URI)
 
     client = pymongo.MongoClient(MONGODB_URI)
