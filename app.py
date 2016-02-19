@@ -44,7 +44,7 @@ def main(args):
 
     # read environment variables in order to collect information about the mongodb
     mongohost = os.getenv("MONGODB_SERVICE_HOST", "localhost")
-    mongoport = int(os.getenv("MONGODB_SERVICE_PORT", 27017))
+    mongoport = os.getenv("MONGODB_SERVICE_PORT", 27017)
     username  = os.getenv("MONGODB_USER")
     password  = os.getenv("MONGODB_PASSWORD")
     dbname    = os.getenv("MONGODB_DATABASE")
@@ -52,7 +52,7 @@ def main(args):
 
     ### Standard URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
 
-    MONGODB_URI = 'mongodb://%s:%s@%s:%d/%s' % (username, password, mongohost, mongoport, dbname)
+    MONGODB_URI = 'mongodb://%s:%s@%s:%d/%s' % (username, password, mongohost, int(mongoport), dbname)
     print ("Connection to mongodb uri: %s ..." % MONGODB_URI)
 
     client = pymongo.MongoClient(MONGODB_URI)
