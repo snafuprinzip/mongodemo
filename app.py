@@ -44,7 +44,7 @@ def main(args):
 
     # read environment variables in order to collect information about the mongodb
     mongohost = os.getenv("MONGODB_SERVICE_HOST", "localhost")
-    mongoport = os.getenv("MONGODB_SERVICE_PORT", 27017)
+    mongoport = int(os.getenv("MONGODB_SERVICE_PORT", 27017))
     username  = os.getenv("MONGODB_USER")
     password  = os.getenv("MONGODB_PASSWORD")
     dbname    = os.getenv("MONGODB_DATABASE")
