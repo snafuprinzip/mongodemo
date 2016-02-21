@@ -79,42 +79,37 @@ class DropDB(object):
         return render.index()
 
 
-###############################################################################
-# main
-###############################################################################
+app = web.application(urls, globals())
+render = web.template.render("templates/", base="layout")
 
-if __name__ == '__main__':
-    app = web.application(urls, globals())
-    render = web.template.render("templates/", base="layout")
+# read environment variables to collect information about the mongodb
+mongohost = os.getenv("MONGODB_SERVICE_HOST", "localhost")
+mongoport = os.getenv("MONGODB_SERVICE_PORT", 27017)
+username  = os.getenv("MONGODB_USER")
+password  = os.getenv("MONGODB_PASSWORD")
+dbname    = os.getenv("MONGODB_DATABASE")
+adminpwd  = os.getenv("MONGODB_ADMIN_PASSWORD")
 
-    # read environment variables to collect information about the mongodb
-    mongohost = os.getenv("MONGODB_SERVICE_HOST", "localhost")
-    mongoport = os.getenv("MONGODB_SERVICE_PORT", 27017)
-    username  = os.getenv("MONGODB_USER")
-    password  = os.getenv("MONGODB_PASSWORD")
-    dbname    = os.getenv("MONGODB_DATABASE")
-    adminpwd  = os.getenv("MONGODB_ADMIN_PASSWORD")
+### URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
+MONGODB_URI = 'mongodb://%s:%s@%s:%d/%s' % (username, password, 
+                                            mongohost, int(mongoport), 
+                                            dbname)
+print ("Connecting to mongodb: %s ..." % MONGODB_URI)
 
-    ### URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
-    MONGODB_URI = 'mongodb://%s:%s@%s:%d/%s' % (username, password, 
-                                                mongohost, int(mongoport), 
-                                                dbname)
-    print ("Connecting to mongodb: %s ..." % MONGODB_URI)
-
-    client = pymongo.MongoClient(MONGODB_URI)
-    db     = client.get_default_database()
+client = pymongo.MongoClient(MONGODB_URI)
+db     = client.get_default_database()
     
-    songs = db['songs']
+songs = db['songs']
 
-    print("Inserting some songs if they aren't already there...")
-    songs.insert(SONG_DATA)
+print("Inserting some songs if they aren't already there...")
+songs.insert(SONG_DATA)
 
-    print("Testing the update of a song...")
-    query = {'song': 'Cheepnis'}
-    songs.update(query, {'$set': {'artist': 'Frank Zappa & The Mothers of Invention'}})
+print("Testing the update of a song...")
+query = {'song': 'Cheepnis'}
+songs.update(query, {'$set': {'artist': 'Frank Zappa & The Mothers of Invention'}})
 
-    # start the web application 
-    app.run()
+# start the web application 
+app.run()
 
-    # close mongodb client before exiting
-    client.close()
+# close mongodb client before exiting
+client.close()
