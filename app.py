@@ -37,9 +37,6 @@ urls = (
     '/add', 'AddSong'
 )
 
-app = web.application(urls, globals())
-render = web.template.render("templates/", base="layout")
-
 class Index(object):
     def GET(self):
         entries = ""
@@ -87,8 +84,8 @@ class DropDB(object):
 ###############################################################################
 
 if __name__ == '__main__':
-    global db
-    global songs
+    app = web.application(urls, globals())
+    render = web.template.render("templates/", base="layout")
 
     # read environment variables to collect information about the mongodb
     mongohost = os.getenv("MONGODB_SERVICE_HOST", "localhost")
@@ -108,6 +105,7 @@ if __name__ == '__main__':
     db     = client.get_default_database()
     
     songs = db['songs']
+
     print("Inserting some songs if they aren't already there...")
     songs.insert(SONG_DATA)
 
