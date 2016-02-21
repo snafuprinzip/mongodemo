@@ -5,44 +5,91 @@
 
 __author__ = 'mleimenmeier'
 
-# Written with pymongo-3.2 
-# Documentation: http://api.mongodb.org/python/
-# A python script connecting to a MongoDB given a MongoDB Connection URI.
-
 import os
 import sys
 import pymongo
+import web
 
-### Create seed data
-
-SEED_DATA = [
+SONG_DATA = [
     {
-        'decade': '1970s',
-        'artist': 'Debby Boone',
-        'song': 'You Light Up My Life',
-        'weeksAtOne': 10
+        'artist': 'Volbeat',
+        'song': 'Still Counting',
+        'genre': 'Metal',
+        'year': 2007
     },
     {
-        'decade': '1980s',
-        'artist': 'Olivia Newton-John',
-        'song': 'Physical',
-        'weeksAtOne': 10
+        'artist': 'Aghora',
+        'song': 'Mahayana',
+        'genre': 'Progressive Metal',
+        'year': 2006
     },
     {
-        'decade': '1990s',
-        'artist': 'Mariah Carey',
-        'song': 'One Sweet Day',
-        'weeksAtOne': 16
+        'artist': 'Frank Zappa',
+        'song': 'Cheepnis',
+        'genre': 'Jazz',
+        'year': 1974
     }
 ]
+
+urls = (
+    '/', 'Index',
+    '/dropdb', 'DropDB',
+    '/add', 'AddSong'
+)
+
+app = web.application(urls, globals())
+render = web.template.render("templates/", base="layout")
+db = 0                          # simply make these two vars global
+songs = 0
+
+class Index(object):
+    def GET(self):
+        entries = ""
+        cursor = songs.find({'year': {'$gt': 0}}).sort('artist', 1)
+        for entry in cursor:
+            entries += """
+<tr> 
+    <td>%s</td> 
+    <td>%s</td> 
+    <td>%s</td> 
+    <td>%s</td>
+</tr>
+            """ % (entry.artist, entry.song, entry.genre, entry.year)
+        return render.index(table = entries)
+
+
+class AddSong(object):
+    def GET(self):
+        return render.add_form()
+
+    def POST(self):
+        global songs
+
+        form = web.input(artist="Nobody", song="Nothing", genre="Classical", year="0")
+        entry = {
+            'artist': form.artist,
+            'song':   form.song,
+            'genre':  form.genre,
+            'year':   int(form.year)
+        }
+        songs.insert(entry)
+
+        return render.index()
+
+
+class DropDB(object):
+    def GET(self):
+        global db
+        db.drop_collection('songs')
+        return render.index()
+
 
 ###############################################################################
 # main
 ###############################################################################
 
-def main(args):
-
-    # read environment variables in order to collect information about the mongodb
+if __name__ == '__main__':
+    # read environment variables to collect information about the mongodb
     mongohost = os.getenv("MONGODB_SERVICE_HOST", "localhost")
     mongoport = os.getenv("MONGODB_SERVICE_PORT", 27017)
     username  = os.getenv("MONGODB_USER")
@@ -50,48 +97,25 @@ def main(args):
     dbname    = os.getenv("MONGODB_DATABASE")
     adminpwd  = os.getenv("MONGODB_ADMIN_PASSWORD")
 
-    ### Standard URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
-
-    MONGODB_URI = 'mongodb://%s:%s@%s:%d/%s' % (username, password, mongohost, int(mongoport), dbname)
-    print ("Connection to mongodb uri: %s ..." % MONGODB_URI)
+    ### URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
+    MONGODB_URI = 'mongodb://%s:%s@%s:%d/%s' % (username, password, 
+                                                mongohost, int(mongoport), 
+                                                dbname)
+    print ("Connecting to mongodb: %s ..." % MONGODB_URI)
 
     client = pymongo.MongoClient(MONGODB_URI)
-
-    db = client.get_default_database()
+    db     = client.get_default_database()
     
-    # First we'll add a few songs. Nothing is required to create the songs 
-    # collection; it is created automatically when we insert.
-
     songs = db['songs']
+    print("Inserting some songs if they aren't already there...")
+    songs.insert(SONG_DATA)
 
-    # Note that the insert method can take either an array or a single dict.
+    print("Testing the update of a song...")
+    query = {'song': 'Cheepnis'}
+    songs.update(query, {'$set': {'artist': 'Frank Zappa & The Mothers of Invention'}})
 
-    songs.insert(SEED_DATA)
+    # start the web application 
+    app.run()
 
-    # Then we need to give Boyz II Men credit for their contribution to
-    # the hit "One Sweet Day".
-
-    query = {'song': 'One Sweet Day'}
-
-    songs.update(query, {'$set': {'artist': 'Mariah Carey ft. Boyz II Men'}})
-
-    # Finally we run a query which returns all the hits that spent 10 or
-    # more weeks at number 1.
-
-    cursor = songs.find({'weeksAtOne': {'$gte': 10}}).sort('decade', 1)
-
-    for doc in cursor:
-        print ('In the %s, %s by %s topped the charts for %d straight weeks.' %
-               (doc['decade'], doc['song'], doc['artist'], doc['weeksAtOne']))
-    
-    ### Since this is an example, we'll clean up after ourselves.
-
-    db.drop_collection('songs')
-
-    ### Only close the connection when your app is terminating
-
+    # close mongodb client before exiting
     client.close()
-
-
-if __name__ == '__main__':
-    main(sys.argv[1:])
