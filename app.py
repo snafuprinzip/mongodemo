@@ -39,13 +39,11 @@ urls = (
 
 app = web.application(urls, globals())
 render = web.template.render("templates/", base="layout")
-db = 0                          # simply make these two vars global
-songs = 0
 
 class Index(object):
     def GET(self):
         entries = ""
-        cursor = songs.find({'year': {'$gt': 0}}).sort('artist', 1)
+        cursor = songs.find({'year': {'$gte': 0}}).sort('artist', 1)
         for entry in cursor:
             entries += """
 <tr> 
