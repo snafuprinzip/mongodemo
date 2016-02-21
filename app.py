@@ -14,7 +14,7 @@ SONG_DATA = [
     {
         'artist': 'Volbeat',
         'song': 'Still Counting',
-        'genre': 'Metal',
+        'genre': 'Heavy Metal, Hard Rock, Psychobilly',
         'year': 2007
     },
     {
@@ -37,27 +37,36 @@ urls = (
     '/add', 'AddSong'
 )
 
-class Index(object):
-    def GET(self):
-        entries = ""
-        cursor = songs.find({'year': {'$gte': 0}}).sort('artist', 1)
-        for entry in cursor:
-            entries += """
+def CreateTable():
+    print("Collecting song information from mongodb...")
+    entries = ""
+    cursor = songs.find({'year': {'$gte': 0}}).sort('artist', 1)
+    for entry in cursor:
+        entries += """
 <tr> 
     <td>%s</td> 
     <td>%s</td> 
     <td>%s</td> 
     <td>%s</td>
 </tr>
-            """ % (entry.artist, entry.song, entry.genre, entry.year)
-        return render.index(table = entries)
+        """ % (entry['artist'], entry['song'], entry['genre'], entry['year'])
+    #    print(entries)
+    return entries
+
+
+class Index(object):
+    def GET(self):
+        print("Index.GET called")
+        return render.index(table = CreateTable())
 
 
 class AddSong(object):
     def GET(self):
+        print("AddSong.GET called")
         return render.add_form()
 
     def POST(self):
+        print("AddSong.POST called")
         global songs
 
         form = web.input(artist="Nobody", song="Nothing", genre="Classical", year="0")
@@ -67,16 +76,17 @@ class AddSong(object):
             'genre':  form.genre,
             'year':   int(form.year)
         }
-        songs.insert(entry)
+        songs.insert_one(entry)
 
-        return render.index()
+        return render.index(table = CreateTable())
 
 
 class DropDB(object):
     def GET(self):
+        print("DropDB.GET called")
         global db
         db.drop_collection('songs')
-        return render.index()
+        return render.index(table = CreateTable())
 
 
 app = web.application(urls, globals())
@@ -101,15 +111,21 @@ db     = client.get_default_database()
     
 songs = db['songs']
 
-print("Inserting some songs if they aren't already there...")
-songs.insert(SONG_DATA)
+query = {'song': 'Cheepnis'}
+print query
+if songs.find(query).count() == 0: # document doesn't exist
+    print("Inserting some songs for your convenience...")
+    songs.insert(SONG_DATA)
 
 print("Testing the update of a song...")
-query = {'song': 'Cheepnis'}
 songs.update(query, {'$set': {'artist': 'Frank Zappa & The Mothers of Invention'}})
 
-# start the web application 
-app.run()
+def main():
+    print("Starting the web application...") 
+    app.run()
 
-# close mongodb client before exiting
-client.close()
+    print("closing mongodb client before exiting...")
+    client.close()
+
+if __name__ == "__main__":
+    main()

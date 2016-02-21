@@ -1,2 +1,2 @@
 PyMongo
-lpthw.web
+web.py

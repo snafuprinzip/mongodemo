@@ -1,12 +1,32 @@
 $def with (table)
 
+<h1>MongoDB Demo for OpenShift</h1>
+<p>
+  This is a small demo program to demonstrate the use of a MongoDB database 
+  within an OpenShift Cluster environment.<br>
+  You can add song titles if you want and the items will be stored in another
+  MongoDB Pod within the same namespace as the application.<br> 
+  Database Credentials will be transferred via environment variables.
+</p>
+
+<p>
+  Have fun!
+</p>
 
 $if table:
   <table>
+    <tr>
+      <th>Artist</th>
+      <th>Song</th>
+      <th>Genre</th>
+      <th>Year</th>
+    </tr>
 $:table
   </table>
 
 <p>
-  Press <a href="/add">add</a> to enter new songs.
+  Press <a href="/add">add</a> to enter new songs
+  or 
+  press <a href="/dropdb">drop all</a> to clear the MongoDB Database.
 </p>
 
