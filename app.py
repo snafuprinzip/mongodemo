@@ -89,6 +89,9 @@ class DropDB(object):
 ###############################################################################
 
 if __name__ == '__main__':
+    global db
+    global songs
+
     # read environment variables to collect information about the mongodb
     mongohost = os.getenv("MONGODB_SERVICE_HOST", "localhost")
     mongoport = os.getenv("MONGODB_SERVICE_PORT", 27017)
