@@ -1,9 +1,11 @@
 <h1> Add a new song</h1>
 
 <form action="/add" method="POST">
-  artist: <input type="text" name="artist"> <br/>
-  song:   <input type="text" name="song">   <br/>
-  genre:  <input type="text" name="genre">  <br/>
-  year:   <input type="text" name="year">   <br/>
+  <table>
+    <tr><th>artist:<th><td><input type="text" name="artist"></td></tr>
+    <tr><th>song:<th><td><input type="text" name="song"> </td></tr>
+    <tr><th>genre:<th><td><input type="text" name="genre"> </td></tr>
+    <tr><th>year:<th><td><input type="text" name="year"> </td></tr>
+  </table>
   <input type="submit">
 </form>
